@@ -2,7 +2,7 @@
 
 ## Technology
 
-[fp-ts](https://github.com/gcanti/fp-ts)
+[fp-ts](https://github.com/gcanti/fp-ts),
 [api](https://jsonplaceholder.typicode.com)
 
 ## Description
