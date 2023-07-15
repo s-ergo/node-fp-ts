@@ -2,8 +2,8 @@
 
 ## Technology
 
-[fp-ts](https://github.com/gcanti/fp-ts),
-[api](https://jsonplaceholder.typicode.com)
+* [fp-ts](https://github.com/gcanti/fp-ts)
+* [api](https://jsonplaceholder.typicode.com)
 
 ## Description
 
