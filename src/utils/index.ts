@@ -39,7 +39,7 @@ export const fetchData = (): TE.TaskEither<Error, Result[]> => {
                 (error: unknown) => new Error(`Fetching users data. ${(error as Error).message}`)
             ),
             TE.tryCatch(
-                () => axios.get("/1posts"),
+                () => axios.get("/posts"),
                 (error: unknown) => new Error(`Fetching posts data. ${(error as Error).message}`)
             ),
             TE.tryCatch(
