@@ -1,4 +1,4 @@
-export type ResultObject = {
+export type Result = {
     id: number;
     name: string;
     email: string;
