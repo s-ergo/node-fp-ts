@@ -1,6 +1,6 @@
 import express from "express";
-import { handleResult } from "../src/utils";
 import { getData } from "../src/services/apiService";
+import { handleResult } from "../src/utils";
 
 const router = express.Router();
 
