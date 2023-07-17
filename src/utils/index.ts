@@ -8,14 +8,6 @@ import { flow } from "fp-ts/lib/function";
 import "../config/axios.config";
 import { Album, Post, Result, User } from "../types";
 
-export const handleResult = (res: any) => (result: E.Either<Error, Result[]>) => {
-    if (E.isLeft(result)) {
-        res.status(500).send(result.left.message);
-    } else {
-        res.send(JSON.stringify(result.right));
-    }
-};
-
 const getMaxIdObject = <T extends { id: number; userId: number }>(id: number, arr: T[]): T =>
     flow(
         filter((obj: T) => id === obj.userId),
@@ -49,4 +41,12 @@ export const fetchData = (): TE.TaskEither<Error, Result[]> => {
         ),
         TE.map(([usersRes, postsRes, albumsRes]) => processData(usersRes.data, postsRes.data, albumsRes.data))
     );
+};
+
+export const handleResult = (res: any) => (result: E.Either<Error, Result[]>) => {
+    if (E.isLeft(result)) {
+        res.status(500).send(result.left.message);
+    } else {
+        res.send(JSON.stringify(result.right));
+    }
 };
