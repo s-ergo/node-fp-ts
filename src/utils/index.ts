@@ -23,6 +23,11 @@ const processData = (users: User[], posts: Post[], albums: Album[]): Result[] =>
         album: getMaxIdObject(id, albums).title,
     }));
 
+const errorLogger = (error: Error) => {
+    console.log(error.message);
+    // some logging
+};
+
 export const fetchData = (): TE.TaskEither<Error, Result[]> => {
     return pipe(
         sequenceT(TE.ApplyPar)(
@@ -39,6 +44,10 @@ export const fetchData = (): TE.TaskEither<Error, Result[]> => {
                 (error: unknown) => new Error(`Fetching albums data. ${(error as Error).message}`)
             )
         ),
+        TE.mapLeft((error) => {
+            errorLogger(error);
+            return error;
+        }),
         TE.map(([usersRes, postsRes, albumsRes]) => processData(usersRes.data, postsRes.data, albumsRes.data))
     );
 };
