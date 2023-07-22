@@ -1,9 +1,8 @@
 import axios, { AxiosResponse } from "axios";
 import * as A from "fp-ts/Array";
-import { filter, reduce } from "fp-ts/Array";
+import { filter, map, reduce } from "fp-ts/Array";
 import * as E from "fp-ts/Either";
 import * as TE from "fp-ts/TaskEither";
-import { pipe } from "fp-ts/function";
 import { flow } from "fp-ts/lib/function";
 import "../config/axios.config";
 import { Album, Post, Result, User } from "../types";
@@ -36,16 +35,16 @@ const createRequest = (dataType: string): TE.TaskEither<Error, AxiosResponse<any
         (error: unknown) => new Error(`Fetching ${dataType} data. ${(error as Error).message}`)
     );
 
-export const fetchData = (): TE.TaskEither<Error, Result[]> => {
-    return pipe(
-        A.sequence(TE.ApplicativePar)(endpoints.map(createRequest)),
+export const fetchData = (): TE.TaskEither<Error, Result[]> =>
+    flow(
+        map(createRequest),
+        A.sequence(TE.ApplicativePar),
         TE.mapLeft((error) => {
             errorLogger(error);
             return error;
         }),
         TE.map(([usersRes, postsRes, albumsRes]) => processData(usersRes.data, postsRes.data, albumsRes.data))
-    );
-};
+    )(endpoints);
 
 export const handleResult = (res: any) => (result: E.Either<Error, Result[]>) => {
     if (E.isLeft(result)) {
