@@ -33,7 +33,7 @@ const handleError = (error: any): CustomError => {
     return customError;
 };
 
-const endpoints = ["u1sers", "posts", "albums"];
+const endpoints = ["users", "posts", "albums"];
 
 const createRequest = (dataType: string): TE.TaskEither<Error, AxiosResponse<any>> =>
     TE.tryCatch(
