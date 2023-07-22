@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import * as A from "fp-ts/Array";
 import { filter, reduce } from "fp-ts/Array";
 import * as E from "fp-ts/Either";
@@ -30,7 +30,7 @@ const errorLogger = (error: Error) => {
 
 const endpoints = ["users", "posts", "albums"];
 
-const createRequest = (dataType: string) =>
+const createRequest = (dataType: string): TE.TaskEither<Error, AxiosResponse<any>> =>
     TE.tryCatch(
         () => axios.get(`/${dataType}`),
         (error: unknown) => new Error(`Fetching ${dataType} data. ${(error as Error).message}`)
