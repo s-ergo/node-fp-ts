@@ -1,5 +1,5 @@
 import axios from "axios";
-import { sequenceT } from "fp-ts/Apply";
+import * as A from "fp-ts/Array";
 import { filter, reduce } from "fp-ts/Array";
 import * as E from "fp-ts/Either";
 import * as TE from "fp-ts/TaskEither";
@@ -19,8 +19,8 @@ const processData = (users: User[], posts: Post[], albums: Album[]): Result[] =>
         id,
         name,
         email,
-        post: getMaxIdObject(id, posts).title,
-        album: getMaxIdObject(id, albums).title,
+        post: getMaxIdObject(id, posts),
+        album: getMaxIdObject(id, albums),
     }));
 
 const errorLogger = (error: Error) => {
@@ -28,22 +28,17 @@ const errorLogger = (error: Error) => {
     // some logging
 };
 
+const endpoints = ["users", "posts", "albums"];
+
+const createRequest = (dataType: string) =>
+    TE.tryCatch(
+        () => axios.get(`/${dataType}`),
+        (error: unknown) => new Error(`Fetching ${dataType} data. ${(error as Error).message}`)
+    );
+
 export const fetchData = (): TE.TaskEither<Error, Result[]> => {
     return pipe(
-        sequenceT(TE.ApplyPar)(
-            TE.tryCatch(
-                () => axios.get("/users"),
-                (error: unknown) => new Error(`Fetching users data. ${(error as Error).message}`)
-            ),
-            TE.tryCatch(
-                () => axios.get("/posts"),
-                (error: unknown) => new Error(`Fetching posts data. ${(error as Error).message}`)
-            ),
-            TE.tryCatch(
-                () => axios.get("/albums"),
-                (error: unknown) => new Error(`Fetching albums data. ${(error as Error).message}`)
-            )
-        ),
+        A.sequence(TE.ApplicativePar)(endpoints.map(createRequest)),
         TE.mapLeft((error) => {
             errorLogger(error);
             return error;
