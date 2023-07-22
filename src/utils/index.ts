@@ -13,18 +13,23 @@ const getMaxIdObject = <T extends { id: number; userId: number }>(id: number, ar
         reduce({ id: null } as T, (max, current) => (max.id > current.id ? max : current))
     )(arr);
 
-const processData = (users: User[], posts: Post[], albums: Album[]): Result[] =>
-    users.map(({ id, name, email }) => ({
+const createUserResult =
+    (posts: Post[], albums: Album[]) =>
+    ({ id, name, email }: User): Result => ({
         id,
         name,
         email,
         post: getMaxIdObject(id, posts),
         album: getMaxIdObject(id, albums),
-    }));
+    });
+
+const processData = (users: User[], posts: Post[], albums: Album[]): Result[] =>
+    flow(map(createUserResult(posts, albums)))(users);
 
 const errorLogger = (error: Error) => {
     console.log(error.message);
     // some logging
+    return error;
 };
 
 const endpoints = ["users", "posts", "albums"];
@@ -39,10 +44,7 @@ export const fetchData = (): TE.TaskEither<Error, Result[]> =>
     flow(
         map(createRequest),
         A.sequence(TE.ApplicativePar),
-        TE.mapLeft((error) => {
-            errorLogger(error);
-            return error;
-        }),
+        TE.mapLeft((error) => errorLogger(error)),
         TE.map(([usersRes, postsRes, albumsRes]) => processData(usersRes.data, postsRes.data, albumsRes.data))
     )(endpoints);
 
