@@ -5,7 +5,7 @@ import * as E from "fp-ts/Either";
 import * as TE from "fp-ts/TaskEither";
 import { flow } from "fp-ts/lib/function";
 import "../config/axios.config";
-import { Album, Post, Result, User } from "../types";
+import { Album, CustomError, Post, Result, User } from "../types";
 
 const getMaxIdObject = <T extends { id: number; userId: number }>(id: number, arr: T[]): T =>
     flow(
@@ -26,31 +26,32 @@ const createUserResult =
 const processData = (users: User[], posts: Post[], albums: Album[]): Result[] =>
     flow(map(createUserResult(posts, albums)))(users);
 
-const errorLogger = (error: Error) => {
-    console.log(error.message);
-    // some logging
-    return error;
+const handleError = (error: any): CustomError => {
+    const customError: CustomError = new Error(error.message);
+    customError.message = error.message ?? "Something went wrong";
+    customError.status = error.response?.status ?? 500;
+    return customError;
 };
 
-const endpoints = ["users", "posts", "albums"];
+const endpoints = ["u1sers", "posts", "albums"];
 
 const createRequest = (dataType: string): TE.TaskEither<Error, AxiosResponse<any>> =>
     TE.tryCatch(
         () => axios.get(`/${dataType}`),
-        (error: unknown) => new Error(`Fetching ${dataType} data. ${(error as Error).message}`)
+        (error: unknown) => error as Error
     );
 
 export const fetchData = (): TE.TaskEither<Error, Result[]> =>
     flow(
         map(createRequest),
         A.sequence(TE.ApplicativePar),
-        TE.mapLeft((error) => errorLogger(error)),
+        TE.mapLeft((error) => handleError(error)),
         TE.map(([usersRes, postsRes, albumsRes]) => processData(usersRes.data, postsRes.data, albumsRes.data))
     )(endpoints);
 
-export const handleResult = (res: any) => (result: E.Either<Error, Result[]>) => {
+export const handleResult = (res: any) => (result: E.Either<CustomError, Result[]>) => {
     if (E.isLeft(result)) {
-        res.status(500).send(result.left.message);
+        res.status(result.left.status).send(result.left.message);
     } else {
         res.send(JSON.stringify(result.right));
     }
