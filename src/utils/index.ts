@@ -35,9 +35,9 @@ const handleError = (error: any): CustomError => {
 
 const endpoints = ["users", "posts", "albums"];
 
-const createRequest = (dataType: string): TE.TaskEither<Error, AxiosResponse<any>> =>
+const createRequest = (path: string): TE.TaskEither<Error, AxiosResponse<any>> =>
     TE.tryCatch(
-        () => axios.get(`/${dataType}`),
+        () => axios.get(`/${path}`),
         (error: unknown) => error as Error
     );
 
